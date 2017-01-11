@@ -2,10 +2,15 @@
 #include "ast-nodes.hpp"
 #include <cstdio>
 #include <cstdlib>
+#include <vector>
 
 Program *myProgram;
 extern int yylex();
-void yyerror(const char *s) { std::printf("Error: %s\n", s); std::exit(1); }
+void yyerror(const char *s)
+{
+std::printf("Error: %s\n", s);
+std::exit(1);
+}
 %}
 
 %union{
@@ -31,6 +36,7 @@ void yyerror(const char *s) { std::printf("Error: %s\n", s); std::exit(1); }
 %token <token> CALL
 %token <token> LOAD
 %token <token> STORE
+%token <token> MOVE
 %token <token> READ
 %token <token> WRITE
 %token <token> WRL
@@ -55,10 +61,16 @@ void yyerror(const char *s) { std::printf("Error: %s\n", s); std::exit(1); }
 
 %%
 
-program: /* empty */ { myProgram = new Program; }
-       | program function { $$->flist.push_back($2); }
-       | program entry_function { $$->flist.push_back($2); }
-       | program common_instr
+program: /* empty */ { myProgram = new Program; $$ = myProgram; }
+       | program function { $$ = $1; $$->flist.push_back($2); }
+       | program entry_function {
+       $$ = $1;
+       $$->flist.push_back($2);
+       $$->entry = $2->entry;
+       }
+       | program common_instr {
+       // puts("An instruction outside functions");
+       }
        ;
 
 common_instr:
@@ -88,7 +100,17 @@ instr_list: /* empty */ { $$ = new vector<Instruction*>; }
           ;
 
 function:
-        enter_instr instr_list ret_instr { $$ = new Function; }
+        enter_instr instr_list ret_instr {
+        $$ = new Function;
+        $$->ilist = $2;
+        $$->entry = $1->num;
+        // the following two statements are a bit dirty
+        // I use the opcode field to store the space we need
+        $$->localspace = $1->opcode;
+        $$->paramspace = $3->opcode;
+        delete $1;
+        delete $3;
+        }
         ;
 
 entry_function:
@@ -121,7 +143,12 @@ common_real_instr:
                  | STORE operand reg_operand {
                  $$ = new Instruction(0, $1);
                  $$->operands[0] = $2;
-                 $$->operands[0] = $3;
+                 $$->operands[1] = $3;
+                 }
+                 | MOVE operand operand {
+                 $$ = new Instruction(0, $1);
+                 $$->operands[0] = $2;
+                 $$->operands[1] = $3;
                  }
                  | READ { $$ = new Instruction(0, $1); }
                  | WRITE operand {
