@@ -1,7 +1,7 @@
 CFLAGS=-g
 CXXFLAGS=$(CFLAGS)
 
-main: main.o tokens.o parser.o
+main: main.o flowgraph.o tokens.o parser.o
 	g++ -o main $^ -lfl
 
 parser.cpp: three-addr.y
