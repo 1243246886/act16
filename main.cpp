@@ -73,6 +73,7 @@ int main()
 		    int idx = g.bb[j];
 		    cout << f->ilist[idx]->num << ' ';
 	    }
+	    cout << endl;
     }
 
     return 0;
