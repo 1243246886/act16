@@ -18,7 +18,7 @@ void genFlowGraph(const Function *f, FlowGraph &g)
 {
 	g.bb.resize(0);
 	g.edges.resize(0);
-	vector<Instruction*> &inslist = *(f->ilist);
+	const vector<Instruction*> &inslist = f->ilist;
 	if (inslist.size()>0) {
 		g.bb.push_back(0);
 	} else {
@@ -63,7 +63,7 @@ int main()
     yyparse();
 
     cout << "Program entry is instruction " << myProgram->entry << endl;
-    for (int i=0; i<myProgram->flist.size(); i++) {
+    for (size_t i=0; i<myProgram->flist.size(); i++) {
 	    Function* f = myProgram->flist[i];
 	    cout << "Function " << i+1 << ": entry is " <<
 		    f->entry << endl;
@@ -71,7 +71,7 @@ int main()
 	    genFlowGraph(f, g);
 	    for (size_t j=0; j<g.bb.size(); j++) {
 		    int idx = g.bb[j];
-		    cout << (*(f->ilist))[idx]->num << ' ';
+		    cout << f->ilist[idx]->num << ' ';
 	    }
     }
 

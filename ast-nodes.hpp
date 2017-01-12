@@ -21,7 +21,7 @@ typedef struct function
 	int localspace;
 	int paramspace;
 	int entry;
-	vector<struct instruction*> *ilist;
+	vector<struct instruction*> ilist;
 } Function;
 
 typedef enum {

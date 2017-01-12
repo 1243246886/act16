@@ -19,7 +19,6 @@ std::exit(1);
     Instruction *ins;
     Operand *operand;
     std::string *str;
-    vector<Instruction*> *instr_list;
     int token;
 }
 
@@ -51,11 +50,10 @@ std::exit(1);
  */
 
 %type <ins> common_instr enter_instr ret_instr common_real_instr
-%type <func> function entry_function
+%type <func> function entry_function function_
 %type <token> label integer op_arith op_condbr
 %type <program> program
 %type <operand> operand offset_exp reg_operand lb_operand
-%type <instr_list> instr_list
 
 %start program
 
@@ -95,21 +93,22 @@ entrypc_instr:
 label:
      integer COLON { $$=$1; }
 
-instr_list: /* empty */ { $$ = new vector<Instruction*>; }
-          | instr_list common_instr { $$ = $1; $$->push_back($2); }
-          ;
+function_:
+         enter_instr {
+         $$ = new Function;
+         $$->entry = $1->num;
+         $$->ilist.push_back($1);
+         $$->localspace = $1->opcode; // use opcode to store localspace
+         }
+         | function_ common_instr {
+         $$->ilist.push_back($2);
+         }
 
 function:
-        enter_instr instr_list ret_instr {
-        $$ = new Function;
-        $$->ilist = $2;
-        $$->entry = $1->num;
-        // the following two statements are a bit dirty
-        // I use the opcode field to store the space we need
-        $$->localspace = $1->opcode;
-        $$->paramspace = $3->opcode;
-        delete $1;
-        delete $3;
+        function_ ret_instr {
+        $$ = $1;
+        $$->paramspace = $2->opcode; // use opcode to store paramspace
+        $$->ilist.push_back($2);
         }
         ;
 
