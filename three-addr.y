@@ -128,6 +128,7 @@ common_real_instr:
                  $$ = new Instruction(0, $1); 
                  $$->operands[0] = $2;
                  $$->operands[1] = $3;
+                 $$->ins_type = INS_ARITH;
                  }
                  | BR lb_operand {
                  $$ = new Instruction(0, $1);
@@ -157,6 +158,7 @@ common_real_instr:
                  $$ = new Instruction(0, $1);
                  $$->operands[0] = $2;
                  $$->operands[1] = $3;
+                 $$->ins_type = INS_MOVE;
                  }
                  | READ { $$ = new Instruction(0, $1); }
                  | WRITE operand {

@@ -44,6 +44,8 @@ typedef enum {
 	INS_RET,
 	INS_BR,
 	INS_CONDBR,
+	INS_ARITH,
+	INS_MOVE,
 	INS_DEFAULT
 } ins_t;
 
@@ -54,7 +56,12 @@ typedef struct instruction
 	int opcode;
 	struct operand *operands[2];
 	instruction();
-	instruction(int n, int o){num=n; opcode=o; ins_type=INS_DEFAULT;}
+	instruction(int n, int o) {
+		num=n;
+		opcode=o;
+		ins_type=INS_DEFAULT;
+		operands[0] = operands[1] = NULL;
+	}
 } Instruction;
 
 #endif
