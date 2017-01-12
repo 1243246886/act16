@@ -11,6 +11,8 @@ int instr_cnt = 0;
 
 %%
 
+"FP" return TOKEN(FP);
+"GP" return TOKEN(GP);
 "instr" instr_cnt++; return TOKEN(INSTR);
 "enter" return TOKEN(ENTER);
 "ret" return TOKEN(RET);

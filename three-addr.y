@@ -42,6 +42,7 @@ std::exit(1);
 %token <token> PARAM
 %token <token> ENTER RET ENTRYPC
 %token <token> SHARP COLON
+%token <token> FP GP
 
 /* Define the type of node our nonterminal symbols represent.
    The types refer to the %union declaration above. Ex: when
@@ -51,7 +52,7 @@ std::exit(1);
 
 %type <ins> common_instr enter_instr ret_instr common_real_instr
 %type <func> function entry_function function_
-%type <token> label integer op_arith op_condbr
+%type <token> label integer op_arith op_condbr pointer
 %type <program> program
 %type <operand> operand offset_exp reg_operand lb_operand
 
@@ -80,11 +81,17 @@ common_instr:
             ;
 
 enter_instr:
-           INSTR label ENTER integer { $$ = new Instruction($2, $4); }
+           INSTR label ENTER integer {
+           $$ = new Instruction($2, $4);
+           $$->ins_type = INS_ENTER;
+           }
            ;
 
 ret_instr:
-         INSTR label RET integer { $$ = new Instruction($2, $4); }
+         INSTR label RET integer {
+         $$ = new Instruction($2, $4);
+         $$->ins_type = INS_RET;
+         }
          ;
 
 entrypc_instr:
@@ -125,11 +132,13 @@ common_real_instr:
                  | BR lb_operand {
                  $$ = new Instruction(0, $1);
                  $$->operands[0] = $2;
+                 $$->ins_type = INS_BR;
                  }
                  | op_condbr reg_operand lb_operand {
                  $$ = new Instruction(0, $1);
                  $$->operands[0] = $2;
                  $$->operands[1] = $3;
+                 $$->ins_type = INS_CONDBR;
                  }
                  | CALL lb_operand {
                  $$ = new Instruction(0, $1);
@@ -177,6 +186,11 @@ op_condbr:
 
 operand:
        reg_operand { $$=$1; }
+       | pointer {
+       $$ = new Operand;
+       $$->operand_type = OPERAND_POINTER;
+       $$->v = $1;
+       }
        | offset_exp { $$=$1; }
        | integer { 
        $$ = new Operand;
@@ -191,6 +205,8 @@ reg_operand:
        $$->operand_type = OPERAND_REG; 
        $$->v = atoi($1->substr(1,$1->size()-2).c_str());
        }
+
+pointer: FP | GP
 
 lb_operand:
           INS_LB {
